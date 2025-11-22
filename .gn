@@ -1,2 +1,1 @@
-# Contents for .gn file 
-buildconfig = "//build/BUILD.gn"
+buildconfig = "//build/BUILDCONFIG.gn"

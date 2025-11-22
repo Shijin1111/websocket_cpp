@@ -1,0 +1,31 @@
+if (target_os == "") {
+  target_os = host_os
+}
+if (target_cpu == "") {
+  target_cpu = host_cpu
+}
+if (current_os == "") {
+  current_os = target_os
+}
+if (current_cpu == "") {
+  current_cpu = target_cpu
+}
+
+# 1. Define the default toolchain
+set_default_toolchain("//build/toolchain:msvc")
+
+# 2. Set default configs for executables
+# This initializes the 'configs' variable so you can use += later
+set_defaults("executable") {
+  configs = [ "//build:compiler_defaults" ]
+}
+
+# 3. Set default configs for static libraries (if used)
+set_defaults("static_library") {
+  configs = [ "//build:compiler_defaults" ]
+}
+
+# 4. Set default configs for source sets (if used)
+set_defaults("source_set") {
+  configs = [ "//build:compiler_defaults" ]
+}

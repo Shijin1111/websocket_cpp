@@ -1,4 +1,3 @@
-# Contents for src/client/ws_client.h file 
 #pragma once
 
 #include <boost/beast/core.hpp>
@@ -6,6 +5,8 @@
 #include <boost/beast/websocket.hpp>
 #include <boost/beast/websocket/ssl.hpp>
 #include <boost/asio/strand.hpp>
+#include<boost/asio/connect.hpp>
+#include <boost/asio/ip/tcp.hpp>
 #include <string>
 #include <functional>
 #include <memory>

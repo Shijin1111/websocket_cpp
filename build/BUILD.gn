@@ -1,4 +1,3 @@
-# Contents for build/BUILD.gn file 
 config("compiler_defaults") {
   if (host_os == "win") {
     cflags = [

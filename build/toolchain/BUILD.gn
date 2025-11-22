@@ -1,23 +1,36 @@
-# Contents for build/toolchain/BUILD.gn file 
-config("compiler_defaults") {
-  if (host_os == "win") {
-    cflags = [
-      "/EHsc",          # Catch C++ exceptions
-      "/std:c++17",     # Use C++17
-      "/W3",            # Warning level 3
-      "/DWIN32_LEAN_AND_MEAN",
-      "/DNOMINMAX",
-      "/D_WIN32_WINNT=0x0601", # Target Windows 7+
-    ]
+toolchain("msvc") {
+  tool("cc") {
+    command = "cl.exe /nologo /FC /c {{source}} /Fo{{output}} {{cflags}} {{defines}} {{include_dirs}}"
+    outputs = [ "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.obj" ]
+    description = "CC {{output}}"
   }
-}
 
-config("debug") {
-  cflags = [ "/Zi", "/Od" ]
-  ldflags = [ "/DEBUG" ]
-}
+  tool("cxx") {
+    command = "cl.exe /nologo /FC /c {{source}} /Fo{{output}} {{cflags}} {{defines}} {{include_dirs}}"
+    outputs = [ "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.obj" ]
+    description = "CXX {{output}}"
+  }
 
-config("release") {
-  cflags = [ "/O2", "/DNDEBUG" ]
-  ldflags = [ "/OPT:REF", "/OPT:ICF" ]
+  tool("alink") {
+    command = "lib.exe /nologo {{arflags}} /OUT:{{output}} {{inputs}}"
+    outputs = [ "{{target_out_dir}}/{{target_output_name}}.lib" ]
+    description = "LIB {{output}}"
+  }
+
+  tool("link") {
+    command = "link.exe /nologo {{ldflags}} /OUT:{{output}} {{inputs}} {{solibs}} {{libs}}"
+    outputs = [ "{{root_out_dir}}/{{target_output_name}}{{output_extension}}" ]
+    description = "LINK {{output}}"
+    default_output_extension = ".exe"
+  }
+
+  tool("stamp") {
+    command = "cmd /c type nul > {{output}}"
+    description = "STAMP {{output}}"
+  }
+
+  tool("copy") {
+    command = "cmd /c copy /y {{source}} {{output}}"
+    description = "COPY {{source}} {{output}}"
+  }
 }
