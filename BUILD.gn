@@ -1,1 +1,58 @@
 # Contents for BUILD.gn file 
+declare_args() {
+  is_debug = true
+  # CHANGE THESE PATHS to match your installation
+  boost_root = "C:/local/boost_1_82_0" 
+  openssl_root = "C:/Program Files/OpenSSL-Win64"
+}
+
+config("external_libs") {
+  include_dirs = [
+    "$boost_root",
+    "$openssl_root/include",
+  ]
+  lib_dirs = [
+    "$openssl_root/lib",
+    # Boost usually auto-links on Windows, but we add lib dir just in case
+    "$boost_root/lib64-msvc-14.3", 
+  ]
+  libs = [
+    "libssl.lib",
+    "libcrypto.lib",
+    "crypt32.lib",
+    "ws2_32.lib",
+    "wldap32.lib",
+  ]
+}
+
+executable("ws_client") {
+  sources = [
+    "src/main.cc",
+    "src/client/ws_client.cc",
+    "src/client/ws_client.h",
+    "src/cli/user_interface.cc",
+    "src/cli/user_interface.h",
+  ]
+
+  deps = []
+  configs += [ ":external_libs" ]
+
+  if (is_debug) {
+    configs += [ "//build:debug" ]
+  } else {
+    configs += [ "//build:release" ]
+  }
+}
+
+executable("unit_tests") {
+  sources = [
+    "tests/unit_tests.cc",
+    "src/client/ws_client.cc",
+    "src/client/ws_client.h",
+  ]
+  
+  configs += [ ":external_libs" ]
+  
+  # Simple definition for testing
+  defines = [ "TEST_MODE" ] 
+}

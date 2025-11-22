@@ -1,1 +1,23 @@
 # Contents for build/BUILD.gn file 
+config("compiler_defaults") {
+  if (host_os == "win") {
+    cflags = [
+      "/EHsc",          # Catch C++ exceptions
+      "/std:c++17",     # Use C++17
+      "/W3",            # Warning level 3
+      "/DWIN32_LEAN_AND_MEAN",
+      "/DNOMINMAX",
+      "/D_WIN32_WINNT=0x0601", # Target Windows 7+
+    ]
+  }
+}
+
+config("debug") {
+  cflags = [ "/Zi", "/Od" ]
+  ldflags = [ "/DEBUG" ]
+}
+
+config("release") {
+  cflags = [ "/O2", "/DNDEBUG" ]
+  ldflags = [ "/OPT:REF", "/OPT:ICF" ]
+}
