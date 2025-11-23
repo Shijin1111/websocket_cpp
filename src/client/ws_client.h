@@ -24,7 +24,9 @@ public:
 
     WebSocketClient(net::io_context& ioc, ssl::context& ctx);
     
-    void Connect(const std::string& host, const std::string& port);
+    // Updated to accept path
+    void Connect(const std::string& host, const std::string& port, const std::string& path);
+    
     void Send(const std::string& message, bool is_binary = false);
     void SetOnMessage(MessageCallback cb);
     void Close();
@@ -42,5 +44,6 @@ private:
     websocket::stream<beast::ssl_stream<beast::tcp_stream>> ws_;
     beast::flat_buffer buffer_;
     std::string host_;
+    std::string path_; // New variable
     MessageCallback on_message_;
 };

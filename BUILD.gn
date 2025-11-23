@@ -10,12 +10,9 @@ config("external_libs") {
     "$boost_root",
     "$openssl_root/include",
   ]
-  lib_dirs = [
-    "$openssl_root/lib/VC/x64/MDd",
-    # Boost usually auto-links on Windows, but we add lib dir just in case
-    "$boost_root/lib64-msvc-14.3",
-  ]
-  libs = [
+  ldflags = [
+    "/LIBPATH:$openssl_root/lib/VC/x64/MDd",
+    "/LIBPATH:$boost_root/lib64-msvc-14.3",
     "libssl.lib",
     "libcrypto.lib",
     "crypt32.lib",
