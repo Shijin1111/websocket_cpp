@@ -16,20 +16,19 @@ int main() {
         return 1;
     }
 
-
     auto client = std::make_shared<WebSocketClient>(ioc, ctx);
     UserInterface ui(client);
     
-    // CONFIGURATION: Postman Echo Server
-    std::string host = "ws.postman-echo.com";
+    // server config
+    std::string host = "echo.websocket.org";
     std::string port = "443";
-    std::string path = "/raw";
+    std::string path = "/"; 
     
     std::cout << "Connecting to " << host << "...\n";
     client->Connect(host, port, path);
 
     client->SetOnMessage([](const std::string& msg) {
-        std::cout << "\n[Server]: " << msg << "\n> ";
+        std::cout << "\n[Server]: " << msg << "\n> " << std::flush;
     });
 
     std::thread io_thread([&ioc]() {

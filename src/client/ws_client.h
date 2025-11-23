@@ -5,11 +5,10 @@
 #include <boost/beast/websocket.hpp>
 #include <boost/beast/websocket/ssl.hpp>
 #include <boost/asio/strand.hpp>
-#include<boost/asio/connect.hpp>
-#include <boost/asio/ip/tcp.hpp>
 #include <string>
 #include <functional>
 #include <memory>
+#include <deque> 
 
 namespace beast = boost::beast;
 namespace http = beast::http;
@@ -18,6 +17,11 @@ namespace net = boost::asio;
 namespace ssl = boost::asio::ssl;
 using tcp = boost::asio::ip::tcp;
 
+struct OutgoingMessage {
+    std::shared_ptr<std::string> payload;
+    bool is_binary;
+};
+
 class WebSocketClient : public std::enable_shared_from_this<WebSocketClient> {
 public:
     using MessageCallback = std::function<void(const std::string&)>;
@@ -25,7 +29,6 @@ public:
     WebSocketClient(net::io_context& ioc, ssl::context& ctx);
     
     void Connect(const std::string& host, const std::string& port, const std::string& path);
-    
     void Send(const std::string& message, bool is_binary = false);
     void SetOnMessage(MessageCallback cb);
     void Close();
@@ -35,7 +38,10 @@ private:
     void OnConnect(beast::error_code ec, tcp::resolver::results_type::endpoint_type ep);
     void OnSslHandshake(beast::error_code ec);
     void OnHandshake(beast::error_code ec);
+    
+    void DoWrite(); 
     void OnWrite(beast::error_code ec, std::size_t bytes_transferred);
+    
     void OnRead(beast::error_code ec, std::size_t bytes_transferred);
     void OnClose(beast::error_code ec);
 
@@ -43,6 +49,9 @@ private:
     websocket::stream<beast::ssl_stream<beast::tcp_stream>> ws_;
     beast::flat_buffer buffer_;
     std::string host_;
-    std::string path_; 
+    std::string path_;
     MessageCallback on_message_;
+
+    bool is_connected_ = false;
+    std::deque<OutgoingMessage> write_queue_;
 };
