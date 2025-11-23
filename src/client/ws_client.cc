@@ -8,7 +8,7 @@ WebSocketClient::WebSocketClient(net::io_context& ioc, ssl::context& ctx)
 
 void WebSocketClient::Connect(const std::string& host, const std::string& port, const std::string& path) {
     host_ = host;
-    path_ = path; // Store path
+    path_ = path;
     resolver_.async_resolve(host, port,
         beast::bind_front_handler(&WebSocketClient::OnResolve, shared_from_this()));
 }
@@ -24,8 +24,7 @@ void WebSocketClient::OnResolve(beast::error_code ec, tcp::resolver::results_typ
 void WebSocketClient::OnConnect(beast::error_code ec, tcp::resolver::results_type::endpoint_type ep) {
     if(ec) return (void)(std::cerr << "Connect Error: " << ec.message() << "\n");
 
-    // [IMPORTANT FIX] Set SNI Hostname.
-    // Many servers (cloud hosted) require this to know which certificate to serve.
+    // Set SNI Hostname.
     if(!SSL_set_tlsext_host_name(ws_.next_layer().native_handle(), host_.c_str())) {
         beast::error_code error(static_cast<int>(::ERR_get_error()), net::error::get_ssl_category());
         std::cerr << "SNI Error: " << error.message() << "\n";
@@ -51,7 +50,6 @@ void WebSocketClient::OnSslHandshake(beast::error_code ec) {
             req.set(http::field::user_agent, "CPP-WebSocket-Client");
         }));
 
-    // [FIX] Use the specific path (with API key) instead of just "/"
     ws_.async_handshake(host_, path_,
         beast::bind_front_handler(&WebSocketClient::OnHandshake, shared_from_this()));
 }
