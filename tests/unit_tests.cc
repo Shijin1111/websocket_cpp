@@ -13,8 +13,7 @@ void TestInitialization() {
 int main() {
     std::cout << "Running Unit Tests...\n";
     TestInitialization();
-    // Additional tests would require mocking the network layer
-    // or running a local echo server instance.
+
     std::cout << "All Tests Passed.\n";
     return 0;
 }
