@@ -1,111 +1,48 @@
-## Problem: XOR-Balanced Transmission
-
-**Time Limit:** 1 second  
-**Memory Limit:** 256 MB  
-
-You are working with a data stream represented by an array \( A \) of length \( N \), where every element \( A_i \) is a **positive integer** (and \( A_i \le 10^9 \)).
-
-For any segment of this stream, say from position \( l \) to \( r \) (where \( 1 \le l \le r \le N \)), we can calculate the **bitwise XOR** of its elements:
-
-\[
-A_l \oplus A_{l+1} \oplus \dots \oplus A_r
-\]
-
-A segment is called **unstable** if this XOR value equals **zero**.
-
-We define the **instability count** of the stream as the total number of unstable (zero-XOR) subsegments.
-
-Formally, it’s the number of pairs \( (l, r) \) satisfying:
-
-\[
-A_l \oplus A_{l+1} \oplus \dots \oplus A_r = 0
-\]
 
 ---
 
-### Your Task
+## solution.md
 
-Given two numbers \( N \) and \( K \):
+```markdown
+# Solution Explanation
 
-- \( N \) — the length of the array \( A \)
-- \( K \) — the **desired** instability count
+## Transformation to Prefix XORs
+Let $P_0, P_1, \dots, P_N$ be the prefix XORs of array $A$, where $P_0 = 0$ and $P_i = P_{i-1} \oplus A_i$.
+A subarray $A[l \dots r]$ has XOR sum 0 if and only if $P_{l-1} = P_r$.
 
-Your job is to construct an array \( A \) of length \( N \) such that **exactly \( K \)** subsegments of \( A \) have a bitwise XOR of zero.
+Thus, finding $K$ zero-XOR subarrays is equivalent to choosing $N+1$ values for $P$ such that the number of identical pairs in $P$ is exactly $K$.
+If a value $x$ appears $c_x$ times in $P$, it contributes $\binom{c_x}{2}$ to $K$.
+We need: $\sum \binom{c_i}{2} = K$ and $\sum c_i = N+1$.
 
-If such an array is possible, print **“YES”** followed by the array.  
-If it’s impossible, print **“NO”**.
+## The Constraint ($A_i > 0$)
+The problem states $A_i$ must be positive. This implies $P_{i-1} \oplus P_i \neq 0$, or $P_{i-1} \neq P_i$.
+This means in our sequence $P$, no two adjacent elements can be the same.
+For a multiset of frequencies $\{c_1, c_2, \dots, c_m\}$, a valid ordering satisfying this adjacency constraint exists if and only if:
+$$ \max(c_i) \le \lceil (N+1)/2 \rceil $$
 
----
+## The Algorithm
+We need to partition the integer $M = N+1$ into parts $c_i$ such that $\sum \binom{c_i}{2} = K$ and $\max(c_i) \le \lceil M/2 \rceil$.
 
-### Input Format
+Let $Limit = \lceil M/2 \rceil$.
+We can solve this using a greedy approach with feasibility checking:
 
-- The first line contains an integer \( t \) — the number of test cases.  
-- Each of the next \( t \) lines contains two integers \( N \) and \( K \).
+1.  **Max K Check:** The maximum possible $K$ for a given $M$ is achieved by splitting $M$ into two groups of size roughly $M/2$. If $K$ is larger than this, output NO.
+2.  **Constructing Partition:**
+    We iterate to find the size of the next group $sz$. We want to pick the largest $sz \in [1, Limit]$ such that:
+    *   We have enough "budget" $K$: $\binom{sz}{2} \le K$.
+    *   The *remaining* $K$ can be formed by the *remaining* $M$ atoms without violating future constraints.
+    
+    To check the second condition efficiently:
+    Let $remM = M - sz$ and $remK = K - \binom{sz}{2}$.
+    The maximum $K$ achievable with $remM$ atoms (given the global limit $Limit$) is calculated by filling with groups of size $Limit$ as much as possible.
+    If $remK \le \text{MaxPossible}(remM, Limit)$, then picking $sz$ is valid.
 
----
+    We iterate $sz$ downwards from $Limit$ or $remM$. The first valid $sz$ is chosen. We repeat until $M=0$.
 
-### Output Format
+3.  **Constructing the Array:**
+    Once we have the counts $c_1, c_2, \dots$, we assign distinct integer values to each group (e.g., $1, 2, 3 \dots$).
+    We construct $P$ by filling the most frequent values at indices $0, 2, 4 \dots$ and then $1, 3, 5 \dots$ to satisfy the adjacency constraint.
+     finally, $A_i = P_{i-1} \oplus P_i$.
 
-For each test case:
-
-- If a valid array exists, print:
-
-  ```
-  YES
-  A_1 A_2 ... A_N
-  ```
-
-- Otherwise, print:
-
-  ```
-  NO
-  ```
-
----
-
-### Constraints
-
-- \( 1 \le t \le 10^4 \)  
-- \( 1 \le N \le 2 \times 10^5 \)  
-- \( 0 \le K \le 10^{18} \)  
-- The sum of all \( N \) over all test cases ≤ \( 2 \times 10^5 \)
-
----
-
-### Example
-
-**Input**
-```
-4
-3 2
-3 3
-5 5
-1 0
-```
-
-**Output**
-```
-YES
-1 2 3
-NO
-YES
-1 1 2 2 3
-YES
-5
-```
-
----
-
-### Explanation (for intuition)
-
-- For example, with \( A = [1, 2, 3] \):
-
-  - Subsegments whose XOR = 0 are:  
-    - \( [1, 1, 2] \) has none  
-    - \( [1, 2] \): XOR = 3  
-    - \( [2, 3] \): XOR = 1  
-    - \( [1, 2, 3] \): XOR = 0  
-
-  So, only one subsegment produces a 0 XOR. Such counting is the heart of the problem.
-
-You’re essentially designing the sequence so that zero-XOR segments occur exactly \( K \) times.
+## Complexity
+The feasibility check is $O(1)$. The loop runs $O(\sqrt{K})$ or $O(N)$ times. Total time $O(N)$ per test case.
